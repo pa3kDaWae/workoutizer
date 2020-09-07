@@ -4,8 +4,8 @@ from itertools import combinations
 
 from bokeh.plotting import figure
 from bokeh.embed import components
-from bokeh.models import HoverTool, CrosshairTool
-from bokeh.models import CheckboxButtonGroup, CustomJS
+from bokeh.models import HoverTool, CrosshairTool, CheckboxButtonGroup, CustomJS
+from bokeh.models.formatters import DatetimeTickFormatter
 from bokeh.layouts import column
 
 from django.conf import settings
@@ -13,7 +13,6 @@ from wizer.tools.utils import cut_list_to_have_same_length, timestamp_to_local_t
     convert_list_to_km
 from wizer.naming import attributes_to_create_time_series_plot_for
 from wizer import models
-
 
 log = logging.getLogger(__name__)
 
@@ -71,7 +70,6 @@ def plot_time_series(activity: models.Activity):
 
     attributes = activity.trace_file.__dict__
     coordinates = json.loads(attributes["coordinates_list"])
-    initial_list_of_distances = []
     list_of_distances = []
     if coordinates:
         initial_list_of_distances = convert_list_to_km(json.loads(attributes['distance_list']))
@@ -81,43 +79,35 @@ def plot_time_series(activity: models.Activity):
     plots = []
     lap_lines = []
 
+    timestamps_list = json.loads(attributes["timestamps_list"])
+    start = timestamp_to_local_time(timestamps_list[0])
+    x_axis = [timestamp_to_local_time(t) - start for t in timestamps_list]
+    # cut x_axis list to have same length as temperature data
+    temperature_list = json.loads(attributes['temperature_list'])
+    x_axis = x_axis[-len(temperature_list):]
     for attribute, values in attributes.items():
         if attribute in attributes_to_create_time_series_plot_for:
             values = json.loads(values)
             if values:
                 attribute = attribute.replace("_list", "")
-                if activity.distance:
-                    x_axis = extend_list_to_have_length(length=len(values), input_list=initial_list_of_distances)
-                    p = figure(plot_height=int(settings.PLOT_HEIGHT / 2.5),
-                               sizing_mode='stretch_width', y_axis_label=plot_matrix[attribute]["axis"],
-                               x_range=(0, x_axis[-1]))
-                    lap = _add_laps_to_plot(laps=lap_data, plot=p, y_values=values)
-                    x_hover = ("Distance", "@x km")
-                else:  # activity has no distance data, use time for x-axis instead
-                    timestamps_list = json.loads(attributes["timestamps_list"])
-                    start = timestamp_to_local_time(timestamps_list[0])
-                    x_axis = [timestamp_to_local_time(t) - start for t in timestamps_list]
-                    x_axis, values = cut_list_to_have_same_length(x_axis, values)
-                    p = figure(x_axis_type='datetime', plot_height=int(settings.PLOT_HEIGHT / 2.5),
-                               sizing_mode='stretch_width', y_axis_label=plot_matrix[attribute]["axis"])
-                    lap = _add_laps_to_plot(laps=lap_data, plot=p, y_values=values,
-                                            x_start_value=x_axis[0], use_time=True)
-                    x_hover = ("Time", "@x")
+                x_axis, values = cut_list_to_have_same_length(x_axis, values)
+                p = figure(x_axis_type='datetime', plot_height=int(settings.PLOT_HEIGHT / 2.5),
+                           sizing_mode='stretch_width', y_axis_label=plot_matrix[attribute]["axis"])
+                lap = _add_laps_to_plot(laps=lap_data, plot=p, y_values=values,
+                                        x_start_value=x_axis[0], use_time=True)
+                x_hover = ("Time", "@x")
                 lap_lines += lap
                 p.toolbar.logo = None
                 p.toolbar_location = None
                 p.xgrid.grid_line_color = None
-                if attribute == 'cadence':
-                    p.scatter(x_axis, values, radius=0.01, fill_alpha=1, color=plot_matrix[attribute]["color"],
-                              legend_label=plot_matrix[attribute]["title"])
-                elif attribute == 'altitude':
-                    p.varea(x_axis, values, [min(values) for i in range(len(values))],
+                if attribute == 'altitude':
+                    p.varea(x_axis, values, [min(values) - 1 for _ in range(len(values))],
                             color=plot_matrix[attribute]["second_color"], fill_alpha=0.5)
                     p.line(x_axis, values, line_width=2, color=plot_matrix[attribute]["color"],
                            legend_label=plot_matrix[attribute]["title"])
                 else:
                     p.line(x_axis, values, line_width=2, color=plot_matrix[attribute]["color"],
-                           legend_label=plot_matrix[attribute]["title"])
+                           legend_label=plot_matrix[attribute]["title"], line_dash_offset=100)
                 hover = HoverTool(
                     tooltips=[(plot_matrix[attribute]['title'], f"@y {plot_matrix[attribute]['axis']}"),
                               x_hover],
@@ -128,6 +118,13 @@ def plot_time_series(activity: models.Activity):
                 p.legend.location = "top_left"
                 p.legend.label_text_font = "ubuntu"
                 p.legend.background_fill_alpha = 0.9
+
+                # use custom datetime tick formatter
+                # TODO 1: fix label for zero seconds
+                # TODO 2: fix js connection for hovering and position rendering
+                dtf = DatetimeTickFormatter()
+                dtf.minutes = ["%M:%S"]
+                p.xaxis.formatter = dtf
                 plots.append(p)
 
     _link_all_plots_with_each_other(all_plots=plots, x_values=list_of_distances)
