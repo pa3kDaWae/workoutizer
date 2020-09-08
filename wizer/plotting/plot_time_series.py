@@ -70,21 +70,27 @@ def plot_time_series(activity: models.Activity):
 
     attributes = activity.trace_file.__dict__
     coordinates = json.loads(attributes["coordinates_list"])
-    list_of_distances = []
-    if coordinates:
-        initial_list_of_distances = convert_list_to_km(json.loads(attributes['distance_list']))
-        list_of_distances = extend_list_to_have_length(length=len(coordinates), input_list=initial_list_of_distances)
+    print(f"len of coordinates: {len(coordinates)}")
 
     lap_data = models.Lap.objects.filter(trace=activity.trace_file)
     plots = []
     lap_lines = []
 
     timestamps_list = json.loads(attributes["timestamps_list"])
+    print(f"len of timestamps_list: {len(timestamps_list)}")
     start = timestamp_to_local_time(timestamps_list[0])
     x_axis = [timestamp_to_local_time(t) - start for t in timestamps_list]
     # cut x_axis list to have same length as temperature data
     temperature_list = json.loads(attributes['temperature_list'])
     x_axis = x_axis[-len(temperature_list):]
+    print(f"x axis: {x_axis[:10]}")
+
+    # list_of_times = []
+    # if coordinates:
+    #     # initial_list_of_distances = convert_list_to_km(json.loads(attributes['distance_list']))
+    #     list_of_times = extend_list_to_have_length(length=len(coordinates), input_list=x_axis)
+    #     print(f"len of timestamps_list after extending: {len(list_of_times)}")
+
     for attribute, values in attributes.items():
         if attribute in attributes_to_create_time_series_plot_for:
             values = json.loads(values)
@@ -120,14 +126,15 @@ def plot_time_series(activity: models.Activity):
                 p.legend.background_fill_alpha = 0.9
 
                 # use custom datetime tick formatter
-                # TODO 1: fix label for zero seconds
+                # TODO 1: fix location of laps
                 # TODO 2: fix js connection for hovering and position rendering
                 dtf = DatetimeTickFormatter()
                 dtf.minutes = ["%M:%S"]
                 p.xaxis.formatter = dtf
+                p.xaxis.major_label_overrides = {0: "0:00"}
                 plots.append(p)
 
-    _link_all_plots_with_each_other(all_plots=plots, x_values=list_of_distances)
+    _link_all_plots_with_each_other(all_plots=plots, x_values=x_axis)
 
     # TODO
     # connect all plots and share hovering line
@@ -172,7 +179,7 @@ def _add_laps_to_plot(laps: list, plot, y_values: list, x_start_value: int = 0, 
     lap_lines = []
     for lap in laps:
         if use_time:
-            x_start_value = lap.elapsed_time
+            x_start_value += lap.elapsed_time
         else:
             x_start_value += lap.distance / 1000
         if lap.trigger == 'manual':
