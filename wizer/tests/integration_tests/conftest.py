@@ -36,7 +36,6 @@ def trace_file(db):
         file_name='file.gpx',
         md5sum='4c1185c55476269b442f424a9d80d964',
         coordinates_list='[[8.47357001155615, 49.47972273454071], [8.47357001155615, 49.47972273454071]]',
-        calories=123,
     )
     trace.save()
     return trace
@@ -52,6 +51,7 @@ def activity(db, sport, trace_file):
         distance=5.2,
         description="some super sport",
         trace_file=trace_file,
+        calories=123,
     )
     activity.save()
     return activity

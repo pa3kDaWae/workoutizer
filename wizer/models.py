@@ -35,8 +35,6 @@ class Traces(models.Model):
     path_to_file = models.CharField(max_length=200)
     file_name = models.CharField(max_length=100, editable=False)
     md5sum = models.CharField(max_length=32, unique=True)
-    # TODO move calories to Activity model
-    calories = models.IntegerField(null=True, blank=True)
     # coordinates
     coordinates_list = models.CharField(max_length=10000000000, default="[]")
     # distance
@@ -65,9 +63,6 @@ class Traces(models.Model):
     avg_temperature = models.IntegerField(null=True, blank=True)
     max_temperature = models.IntegerField(null=True, blank=True)
     min_temperature = models.IntegerField(null=True, blank=True)
-    # training effect
-    aerobic_training_effect = models.FloatField(blank=True, null=True)
-    anaerobic_training_effect = models.FloatField(blank=True, null=True)
     # timestamps
     timestamps_list = models.CharField(max_length=10000000000, default="[]")
     # other
@@ -103,9 +98,16 @@ class Activity(models.Model):
     date = models.DateTimeField(blank=False, default=timezone.now, verbose_name="Date:")
     duration = models.DurationField(verbose_name="Duration:", default=datetime.timedelta(minutes=30))
     distance = models.FloatField(blank=True, null=True, verbose_name="Distance:", default=0)
+
+    # training effect
+    aerobic_training_effect = models.FloatField(blank=True, null=True, editable=False)
+    anaerobic_training_effect = models.FloatField(blank=True, null=True, editable=False)
+    # calories
+    calories = models.IntegerField(null=True, blank=True, editable=False)
+
     description = models.CharField(max_length=600, blank=True, null=True, verbose_name="Description:")
     trace_file = models.ForeignKey(Traces, on_delete=models.CASCADE, blank=True, null=True)
-    ui_cache_activity_data = models.ForeignKey(UICacheActivityData, on_delete=models.CASCADE, blank=False)
+    # ui_cache_activity_data = models.ForeignKey(UICacheActivityData, on_delete=models.CASCADE, blank=False)
     is_demo_activity = models.BooleanField(verbose_name="Is this a Demo Activity:", default=False)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)

@@ -192,6 +192,10 @@ def _save_activity_to_model(activities_model, parser, sport_instance, trace_inst
         distance=parser.distance,
         trace_file=trace_instance,
         is_demo_activity=importing_demo_data,
+        calories=parser.calories,
+        # training effect
+        aerobic_training_effect=parser.aerobic_training_effect,
+        anaerobic_training_effect=parser.anaerobic_training_effect,
     )
     activity_object.save()
     return activity_object
@@ -202,7 +206,6 @@ def save_trace_to_model(traces_model, md5sum, parser, trace_file):
     trace_object = traces_model(
         path_to_file=trace_file,
         md5sum=md5sum,
-        calories=parser.calories,
         # coordinates
         coordinates_list=parser.coordinates_list,
         # distances
@@ -229,9 +232,6 @@ def save_trace_to_model(traces_model, md5sum, parser, trace_file):
         min_temperature=parser.min_temperature,
         avg_temperature=parser.avg_temperature,
         max_temperature=parser.max_temperature,
-        # training effect
-        aerobic_training_effect=parser.aerobic_training_effect,
-        anaerobic_training_effect=parser.anaerobic_training_effect,
         # timestamps
         timestamps_list=parser.timestamps_list,
     )

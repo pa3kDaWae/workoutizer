@@ -50,17 +50,17 @@
             </table>
         </div>
     {% endif %}
-    {% if activity.trace_file.aerobic_training_effect and activity.trace_file.anaerobic_training_effect %}
+    {% if activity.aerobic_training_effect and activity.anaerobic_training_effect %}
         <div class="col-sm-6">
             <h5>Trainings Effect</h5>
             <table class="table table-hover table-borderless text-muted">
                 <tr>
                     <td>Aerobic</td>
-                    <td>{{ activity.trace_file.aerobic_training_effect }}</td>
+                    <td>{{ activity.aerobic_training_effect }}</td>
                 </tr>
                 <tr>
                     <td>Anaerobic</td>
-                    <td>{{ activity.trace_file.anaerobic_training_effect }}</td>
+                    <td>{{ activity.anaerobic_training_effect }}</td>
                 </tr>
             </table>
         </div>
