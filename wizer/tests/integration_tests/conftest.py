@@ -1,11 +1,36 @@
+import os
 import datetime
 
 import pytest
-import pytz
-from django.utils import timezone
-from django.conf import settings as django_settings
 
 from wizer.models import Settings, Sport, Activity, Traces
+from wizer.file_helper.fit_parser import FITParser
+from wizer.file_helper.gpx_parser import GPXParser
+
+
+@pytest.fixture(scope="module")
+def fit_parser():
+    test_file_path = os.path.join(os.path.dirname(__file__), "data/example.fit")
+
+    def _pass_path(path=test_file_path):
+        return FITParser(path_to_file=path)
+
+    return _pass_path
+
+
+@pytest.fixture(scope="module")
+def gpx_parser():
+    test_file_path = os.path.join(os.path.dirname(__file__), "data/example.gpx")
+
+    def _pass_path(path=test_file_path):
+        return GPXParser(path_to_file=path)
+
+    return _pass_path
+
+
+@pytest.fixture
+def md5sum():
+    return "a64847629ea151cb1270b98d22ce6bb6"
 
 
 @pytest.fixture

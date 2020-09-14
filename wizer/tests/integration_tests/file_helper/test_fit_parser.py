@@ -69,15 +69,6 @@ def test_get_min_max_values(fit_parser):
     assert p.min_cadence == 0.0
 
 
-def test_convert_list_attributes_to_json(fit_parser):
-    p = fit_parser()
-    assert type(p.timestamps_list) == list
-    assert type(p.coordinates_list) == list
-    p.convert_list_attributes_to_json()
-    assert type(p.timestamps_list) == str
-    assert type(p.coordinates_list) == str
-
-
 def test_convert_list_of_nones_to_empty_list(fit_parser):
     p = fit_parser(path=os.path.join(os.path.dirname(__file__), "../data/with_nones.fit"))
     assert p.altitude_list[:3] == [None, None, None]

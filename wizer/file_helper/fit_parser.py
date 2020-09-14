@@ -121,11 +121,6 @@ class FITParser(Parser):
                     setattr(self, f"max_{name}", round(float(max(values)), 2))
                     setattr(self, f"min_{name}", round(float(min(values)), 2))
 
-    def convert_list_attributes_to_json(self):
-        for attribute, values in self.__dict__.items():
-            if attribute.endswith("_list"):
-                setattr(self, attribute, json.dumps(values))
-
 
 def _parse_lap_data(record):
     lap = LapData(

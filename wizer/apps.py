@@ -13,6 +13,7 @@ from wizer.file_helper.fit_collector import FitCollector
 from wizer.tools.utils import sanitize, calc_md5
 from wizer.file_helper.initial_data_handler import insert_settings_and_sports_to_model, \
     create_demo_trace_data_with_recent_time, insert_activities_to_model
+from wizer.ui_cache.adaptor import save_ui_cache_to_model
 
 log = logging.getLogger(__name__)
 
@@ -148,6 +149,11 @@ def parse_and_save_to_model(models, md5sum, trace_file, importing_demo_data=Fals
         traces_model=models.Traces, md5sum=md5sum,
         parser=parser, trace_file=trace_file)
     trace_file_instance = models.Traces.objects.get(pk=trace_file_object.pk)
+    ui_cache_object = save_ui_cache_to_model(
+        ui_cache_model=models.UICacheActivityData,
+        parser=parser,
+    )
+    ui_cache_instance = models.UICacheActivityData.objects.get(pk=ui_cache_object.pk)
     sport = parser.sport
     mapped_sport = map_sport_name(sport, sport_naming_map)
     sport_instance = models.Sport.objects.filter(slug=sanitize(mapped_sport)).first()
@@ -159,7 +165,8 @@ def parse_and_save_to_model(models, md5sum, trace_file, importing_demo_data=Fals
     activity = _save_activity_to_model(
         activities_model=models.Activity, parser=parser,
         sport_instance=sport_instance, trace_instance=trace_file_instance,
-        importing_demo_data=importing_demo_data)
+        importing_demo_data=importing_demo_data, ui_cache_instance=ui_cache_instance,
+    )
     log.info(f"created new {sport_instance} activity: {parser.file_name}. Id: {activity.pk}")
     return trace_file_instance
 
@@ -183,9 +190,12 @@ def save_laps_to_model(lap_model, laps: list, trace_instance):
         lap_object.save()
 
 
-def _save_activity_to_model(activities_model, parser, sport_instance, trace_instance, importing_demo_data):
+def _save_activity_to_model(activities_model, parser, sport_instance, trace_instance, importing_demo_data,
+                            ui_cache_instance):
+    name = parser.file_name.replace(".gpx", "").replace(".fit", "")
+    log.debug(f"saving activity {parser.file_name} to model")
     activity_object = activities_model(
-        name=parser.file_name.replace(".gpx", "").replace(".fit", ""),
+        name=name,
         sport=sport_instance,
         date=parser.date,
         duration=parser.duration,
@@ -193,6 +203,7 @@ def _save_activity_to_model(activities_model, parser, sport_instance, trace_inst
         trace_file=trace_instance,
         is_demo_activity=importing_demo_data,
         calories=parser.calories,
+        ui_cache_activity_data=ui_cache_instance,
         # training effect
         aerobic_training_effect=parser.aerobic_training_effect,
         anaerobic_training_effect=parser.anaerobic_training_effect,
@@ -212,6 +223,8 @@ def save_trace_to_model(traces_model, md5sum, parser, trace_file):
         distance_list=parser.distance_list,
         # altitude
         altitude_list=parser.altitude_list,
+        max_altitude=parser.max_altitude,
+        min_altitude=parser.min_altitude,
         # heart rate
         heart_rate_list=parser.heart_rate_list,
         min_heart_rate=parser.min_heart_rate,
@@ -255,7 +268,6 @@ def parse_data(file):
         parser = FITParser(path_to_file=file)
         parser.convert_list_of_nones_to_empty_list()
         parser.set_min_max_values()
-        parser.convert_list_attributes_to_json()
     else:
         log.warning(f"file type: {file} unknown")
         parser = None

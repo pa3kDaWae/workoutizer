@@ -7,6 +7,7 @@ from django.utils import timezone
 from django.template.defaultfilters import slugify
 from colorfield.fields import ColorField
 
+
 log = logging.getLogger(__name__)
 
 
@@ -77,7 +78,17 @@ class Traces(models.Model):
 
 
 class UICacheActivityData(models.Model):
-    pass
+    coordinates_list = models.CharField(max_length=10000000000, default="[]")
+    distance_list = models.CharField(max_length=10000000000, default="[]")
+    altitude_list = models.CharField(max_length=10000000000, default="[]")
+    heart_rate_list = models.CharField(max_length=10000000000, default="[]")
+    cadence_list = models.CharField(max_length=10000000000, default="[]")
+    speed_list = models.CharField(max_length=10000000000, default="[]")
+    temperature_list = models.CharField(max_length=10000000000, default="[]")
+    timestamps_list = models.CharField(max_length=10000000000, default="[]")
+    # other
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
 
 
 def default_sport():
@@ -107,7 +118,7 @@ class Activity(models.Model):
 
     description = models.CharField(max_length=600, blank=True, null=True, verbose_name="Description:")
     trace_file = models.ForeignKey(Traces, on_delete=models.CASCADE, blank=True, null=True)
-    # ui_cache_activity_data = models.ForeignKey(UICacheActivityData, on_delete=models.CASCADE, blank=False)
+    ui_cache_activity_data = models.ForeignKey(UICacheActivityData, on_delete=models.CASCADE, blank=True, null=True)
     is_demo_activity = models.BooleanField(verbose_name="Is this a Demo Activity:", default=False)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)

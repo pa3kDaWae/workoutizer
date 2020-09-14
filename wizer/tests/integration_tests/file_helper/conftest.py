@@ -1,29 +1,6 @@
-import os
 import pytest
 
 from wizer.file_helper.gpx_exporter import gpx_header
-from wizer.file_helper.fit_parser import FITParser
-from wizer.file_helper.gpx_parser import GPXParser
-
-
-@pytest.fixture(scope="module")
-def fit_parser():
-    test_file_path = os.path.join(os.path.dirname(__file__), "../data/example.fit")
-
-    def _pass_path(path=test_file_path):
-        return FITParser(path_to_file=path)
-
-    return _pass_path
-
-
-@pytest.fixture(scope="module")
-def gpx_parser():
-    test_file_path = os.path.join(os.path.dirname(__file__), "../data/example.gpx")
-
-    def _pass_path(path=test_file_path):
-        return GPXParser(path_to_file=path)
-
-    return _pass_path
 
 
 @pytest.fixture(scope='session')

@@ -18,7 +18,9 @@ class Parser:
         # distances
         self.distance_list = []
         # elevation
-        self.altitude_list = []
+        self.altitude_list = []     # there is no avg altitude in fit files
+        self.max_altitude = None    # float()
+        self.min_altitude = None
         # heart rate
         self.heart_rate_list = []
         self.min_heart_rate = None
