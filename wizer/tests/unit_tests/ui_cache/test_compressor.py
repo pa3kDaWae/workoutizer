@@ -2,7 +2,7 @@ from itertools import combinations
 
 import pytest
 
-from wizer.ui_cache.compress import _compress_coordinates, _compress_list_of_floats, _ensure_list_of_ints, \
+from wizer.ui_cache.compressor import _compress_coordinates, _compress_list_of_floats, _ensure_list_of_ints, \
     compress_data_for_ui_cache, ensure_list_attributes_have_same_length, _compress_list_length
 
 
@@ -59,8 +59,24 @@ def test_ensure_list_attributes_have_same_length(dummy_parser):
         assert len(combination[0]) == len(combination[1])
 
 
+def test_ensure_list_attributes_have_same_length__lists_with_zero_length(dummy_parser):
+    parser = dummy_parser()
+    parser.cadence_list = []
+    parser.speed_list = []
+    result_parser = ensure_list_attributes_have_same_length(parser=parser)
+    list_attributes = []
+    for attribute, value_list in result_parser.__dict__.items():
+        if attribute.endswith("_list"):
+            list_attributes.append(value_list)
+
+    for combination in combinations(list_attributes, 2):
+        assert len(combination[0]) == len(combination[1])
+        assert len(combination[0]) != 0
+
+
 def test__compress_list_length(dummy_list):
     list20 = dummy_list(length=20)
+    assert len(_compress_list_length(input_list=list20, desired_length=0)) == 0
     assert len(_compress_list_length(input_list=list20, desired_length=10)) == 10
     assert len(_compress_list_length(input_list=list20, desired_length=20)) == 20
     with pytest.raises(ValueError):

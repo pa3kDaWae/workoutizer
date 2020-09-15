@@ -171,6 +171,31 @@ def parse_and_save_to_model(models, md5sum, trace_file, importing_demo_data=Fals
     return trace_file_instance
 
 
+def parse_and_save_to_model__trace_is_present_already(models, parser, trace_file_instance):
+    ui_cache = save_ui_cache_to_model(
+        ui_cache_model=models.UICacheActivityData,
+        parser=parser,
+    )
+    if ui_cache:
+        ui_cache = models.UICacheActivityData.objects.get(pk=ui_cache.pk)
+    sport = parser.sport
+    mapped_sport = map_sport_name(sport, sport_naming_map)
+    sport_instance = models.Sport.objects.filter(slug=sanitize(mapped_sport)).first()
+    save_laps_to_model(
+        lap_model=models.Lap,
+        laps=parser.laps,
+        trace_instance=trace_file_instance,
+    )
+    activity = _save_activity_to_model(
+        activities_model=models.Activity, parser=parser,
+        sport_instance=sport_instance, trace_instance=trace_file_instance,
+        importing_demo_data=False, ui_cache_instance=ui_cache,
+    )
+    log.info(f"created new {sport_instance} activity: {parser.file_name}. Id: {activity.pk}")
+    return trace_file_instance
+
+
+
 def save_laps_to_model(lap_model, laps: list, trace_instance):
     for lap in laps:
         log.debug(f'saving lap data: {lap} for trace: {trace_instance}')
@@ -263,6 +288,7 @@ def parse_data(file):
     if file.endswith(".gpx"):
         log.debug(f"parsing GPX file ...")
         parser = GPXParser(path_to_file=file)
+        parser.set_min_max_values()
     elif file.endswith(".fit"):
         log.debug(f"parsing FIT file ...")
         parser = FITParser(path_to_file=file)

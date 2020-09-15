@@ -1,6 +1,8 @@
 import os
 import datetime
 
+from wizer.tools.utils import remove_nones_from_list
+
 
 class Parser:
     def __init__(self, path_to_file):
@@ -74,3 +76,13 @@ class Parser:
 
     def get_file_name_from_path(self, path):
         return path.split("/")[-1]
+
+    def set_min_max_values(self):
+        attributes = self.__dict__.copy()
+        for attribute, values in attributes.items():
+            if attribute.endswith("_list") and attribute != 'coordinates_list' and attribute != 'timestamps_list':
+                name = attribute.replace("_list", "")
+                values = remove_nones_from_list(values)
+                if values:
+                    setattr(self, f"max_{name}", round(float(max(values)), 2))
+                    setattr(self, f"min_{name}", round(float(min(values)), 2))

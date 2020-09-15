@@ -2,7 +2,10 @@ import logging
 
 from wizer import models
 from wizer.apps import get_md5sums_from_model, get_all_files, calc_md5, parse_and_save_to_model, parse_data, \
-    save_laps_to_model
+    save_laps_to_model, parse_and_save_to_model__trace_is_present_already
+from wizer.ui_cache.adaptor import save_ui_cache_to_model
+from wizer.ui_cache.compressor import compress_data_for_ui_cache, ensure_list_attributes_have_same_length
+
 
 log = logging.getLogger(__name__)
 
@@ -35,22 +38,47 @@ class Reimporter:
             else:  # trace file is in db already
                 parser = parse_data(file=trace_file)
                 trace = models.Traces.objects.get(md5sum=md5sum)
-                activity = models.Activity.objects.get(trace_file=trace)
-                self._compare_and_update(activity, parser)
-                self._compare_and_update(trace, parser)
-                laps = models.Lap.objects.filter(trace=trace)
-                if laps:    # activity has laps in db already
-                    for lap_instance, parser_lap in zip(laps, parser.laps):
-                        self._compare_and_update(lap_instance, parser_lap)
-                elif not laps and parser.laps:  # no laps in db but parser
-                    save_laps_to_model(models.Lap, parser.laps, trace)
-                    self.activity_modified = True
+                try:
+                    activity = models.Activity.objects.get(trace_file=trace)
+                    self._compare_and_update(activity, parser)
+                    self._compare_and_update(trace, parser)
 
-                if self.activity_modified:
-                    log.info(f"updated data for {activity.name} ...")
-                    self.updated_activities.add(activity.name)
-                else:
-                    log.info(f"no relevant update for {activity.name}")
+                    # ui cache data
+                    ui_cache_data = activity.ui_cache_activity_data
+                    if ui_cache_data:   # activity has ui cache data already
+                        compressed_parser = ensure_list_attributes_have_same_length(parser=parser)
+                        compressed_parser = compress_data_for_ui_cache(parser=compressed_parser)
+                        self._compare_and_update(obj=ui_cache_data, parser=compressed_parser)
+                    else:               # activity does not have ui cache data yet
+                        ui_cache_object = save_ui_cache_to_model(ui_cache_model=models.UICacheActivityData, parser=parser)
+                        if ui_cache_object:     # at least some values have been stored to db
+                            ui_cache_instance = models.UICacheActivityData.objects.get(pk=ui_cache_object.pk)
+                            activity.ui_cache_activity_data = ui_cache_instance
+                            activity.save()
+                            self.activity_modified = True
+
+                    # laps
+                    laps = models.Lap.objects.filter(trace=trace)
+                    if laps:    # activity has laps in db already
+                        for lap_instance, parser_lap in zip(laps, parser.laps):
+                            self._compare_and_update(lap_instance, parser_lap)
+                    elif not laps and parser.laps:  # no laps in db but parser
+                        save_laps_to_model(models.Lap, parser.laps, trace)
+                        self.activity_modified = True
+
+                    if self.activity_modified:
+                        log.info(f"updated data for {activity.name} ...")
+                        self.updated_activities.add(activity.name)
+                    else:
+                        log.info(f"no relevant update for {activity.name}")
+                except models.Activity.DoesNotExist:
+                    log.warning(f"Could not find corresponding activity to trace file: {trace.file_name}, "
+                                f"will try parsing and adding it.")
+                    parse_and_save_to_model__trace_is_present_already(
+                        models=models,
+                        parser=parser,
+                        trace_file_instance=trace,
+                    )
         log.debug(f"updated {len(self.updated_activities)} activities:\n{self.updated_activities}")
         log.info(f"successfully parsed trace files and updated corresponding database objects")
 
@@ -69,7 +97,7 @@ class Reimporter:
                 else:
                     db_value = getattr(obj, attribute)
                     if not _values_equal(db_value, value):
-                        log.debug(f"overwriting value for {attribute} old: {db_value} to: {value}")
+                        log.debug(f"overwriting value for {attribute} from: {db_value} to: {value}")
                         setattr(obj, attribute, value)
                         self.activity_modified = True
                         updated = True

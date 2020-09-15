@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-import json
 import logging
 import datetime
 
@@ -8,7 +7,6 @@ from fitparse import FitFile
 from django.conf import settings
 
 from wizer.file_helper.lib.parser import Parser
-from wizer.tools.utils import remove_nones_from_list
 
 log = logging.getLogger(__name__)
 
@@ -110,16 +108,6 @@ class FITParser(Parser):
                         break
                 if not got_value:
                     setattr(self, attribute, [])
-
-    def set_min_max_values(self):
-        attributes = self.__dict__.copy()
-        for attribute, values in attributes.items():
-            if attribute.endswith("_list") and attribute != 'coordinates_list' and attribute != 'timestamps_list':
-                name = attribute.replace("_list", "")
-                values = remove_nones_from_list(values)
-                if values:
-                    setattr(self, f"max_{name}", round(float(max(values)), 2))
-                    setattr(self, f"min_{name}", round(float(min(values)), 2))
 
 
 def _parse_lap_data(record):

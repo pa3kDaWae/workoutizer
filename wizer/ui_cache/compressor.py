@@ -27,20 +27,30 @@ def _ensure_list_of_ints(input_list):
 
 def ensure_list_attributes_have_same_length(parser):
     lengths = []
+    attributes_with_non_zero_length = {}
+    attributes_with_zero_length = []
     for attribute, value_list in parser.__dict__.items():
         if attribute.endswith("_list"):
-            lengths.append(len(value_list))
+            if len(value_list) == 0:
+                attributes_with_zero_length.append(attribute)
+            else:
+                lengths.append(len(value_list))
+                attributes_with_non_zero_length[attribute] = value_list
     minimal_length = min(lengths)
-    for attribute, value_list in parser.__dict__.items():
+    for attribute, value_list in attributes_with_non_zero_length.items():
         if attribute.endswith("_list"):
             compress_list = _compress_list_length(input_list=value_list, desired_length=minimal_length)
             setattr(parser, attribute, compress_list)
+    for attribute in attributes_with_zero_length:
+        setattr(parser, attribute, [None for _ in range(minimal_length)])
     return parser
 
 
 def _compress_list_length(input_list, desired_length):
     if len(input_list) == desired_length:
         return input_list
+    elif desired_length == 0:
+        return []
     elif desired_length > len(input_list):
         raise ValueError("Desired length is larger than input list. "
                          "This function is only capable of decreasing the size.")

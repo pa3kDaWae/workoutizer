@@ -69,18 +69,23 @@ def plot_time_series(activity: models.Activity):
         the html script and div elements used to render the plots in the html templates
     """
 
-    attributes = activity.trace_file.__dict__
-    coordinates = json.loads(attributes["coordinates_list"])
+    ui_cache_data = activity.ui_cache_activity_data
+    # from IPython import embed
+    # embed()
+
+    coordinates = json.loads(ui_cache_data.coordinates_list)
     initial_list_of_distances = []
     list_of_distances = []
     if coordinates:
-        initial_list_of_distances = convert_list_to_km(json.loads(attributes['distance_list']))
+        initial_list_of_distances = convert_list_to_km(json.loads(ui_cache_data.distance_list))
         list_of_distances = extend_list_to_have_length(length=len(coordinates), input_list=initial_list_of_distances)
 
     lap_data = models.Lap.objects.filter(trace=activity.trace_file)
     plots = []
     lap_lines = []
 
+    from IPython import embed
+    embed()
     for attribute, values in attributes.items():
         if attribute in attributes_to_create_time_series_plot_for:
             values = json.loads(values)
@@ -94,7 +99,7 @@ def plot_time_series(activity: models.Activity):
                     lap = _add_laps_to_plot(laps=lap_data, plot=p, y_values=values)
                     x_hover = ("Distance", "@x km")
                 else:  # activity has no distance data, use time for x-axis instead
-                    timestamps_list = json.loads(attributes["timestamps_list"])
+                    timestamps_list = json.loads(ui_cache_data.timestamps_list)
                     start = timestamp_to_local_time(timestamps_list[0])
                     x_axis = [timestamp_to_local_time(t) - start for t in timestamps_list]
                     x_axis, values = cut_list_to_have_same_length(x_axis, values)
