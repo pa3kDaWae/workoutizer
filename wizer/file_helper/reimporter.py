@@ -56,7 +56,6 @@ class Reimporter:
                             activity.ui_cache_activity_data = ui_cache_instance
                             activity.save()
                             self.activity_modified = True
-
                     # laps
                     laps = models.Lap.objects.filter(trace=trace)
                     if laps:    # activity has laps in db already

@@ -18,11 +18,11 @@ def _compress_coordinates(coordinates, decimals):
 
 
 def _compress_list_of_floats(input_list: list, decimals):
-    return pd.Series(input_list).round(decimals=decimals).to_list()
+    return pd.Series(input_list, dtype="float").round(decimals=decimals).to_list()
 
 
 def _ensure_list_of_ints(input_list):
-    return pd.Series(input_list).astype(int).to_list()
+    return pd.Series(input_list, dtype="float").astype(int).to_list()
 
 
 def ensure_list_attributes_have_same_length(parser):

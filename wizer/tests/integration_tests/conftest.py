@@ -3,7 +3,7 @@ import datetime
 
 import pytest
 
-from wizer.models import Settings, Sport, Activity, Traces
+from wizer.models import Settings, Sport, Activity, Traces, UICacheActivityData
 from wizer.file_helper.fit_parser import FITParser
 from wizer.file_helper.gpx_parser import GPXParser
 
@@ -67,7 +67,24 @@ def trace_file(db):
 
 
 @pytest.fixture
-def activity(db, sport, trace_file):
+def ui_cache_data(db, dummy_parser):
+    parser = dummy_parser()
+    ui_data = UICacheActivityData(
+        coordinates_list=parser.coordinates_list,
+        distance_list=parser.distance_list,
+        altitude_list=parser.altitude_list,
+        heart_rate_list=parser.heart_rate_list,
+        cadence_list=parser.cadence_list,
+        speed_list=parser.speed_list,
+        temperature_list=parser.temperature_list,
+        timestamps_list=parser.timestamps_list,
+    )
+    ui_data.save()
+    return ui_data
+
+
+@pytest.fixture
+def activity(db, sport, trace_file, ui_cache_data):
     activity = Activity(
         name='Running',
         sport=sport,
@@ -77,6 +94,7 @@ def activity(db, sport, trace_file):
         description="some super sport",
         trace_file=trace_file,
         calories=123,
+        ui_cache_activity_data=ui_cache_data,
     )
     activity.save()
     return activity
