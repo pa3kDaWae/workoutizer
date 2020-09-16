@@ -25,7 +25,9 @@ class Reimporter:
         log.info(f"starting reimport process...")
         md5sums_from_db = get_md5sums_from_model(traces_model=models.Traces)
         trace_files = get_all_files(path=self.path)
-        for trace_file in trace_files:
+        number_of_trace_files = len(trace_files)
+        for i, trace_file in enumerate(trace_files):
+            log.debug(f"({i}/{number_of_trace_files}) reimporting: {trace_file} ")
             self.activity_modified = False
             md5sum = calc_md5(trace_file)
             if md5sum not in md5sums_from_db:  # trace file is not in db already
@@ -46,8 +48,8 @@ class Reimporter:
                     # ui cache data
                     ui_cache_data = activity.ui_cache_activity_data
                     if ui_cache_data:   # activity has ui cache data already
-                        compressed_parser = ensure_list_attributes_have_same_length(parser=parser)
-                        compressed_parser = compress_data_for_ui_cache(parser=compressed_parser)
+                        compressed_parser = compress_data_for_ui_cache(parser=parser)
+                        compressed_parser = ensure_list_attributes_have_same_length(parser=compressed_parser)
                         self._compare_and_update(obj=ui_cache_data, parser=compressed_parser)
                     else:               # activity does not have ui cache data yet
                         ui_cache_object = save_ui_cache_to_model(ui_cache_model=models.UICacheActivityData, parser=parser)

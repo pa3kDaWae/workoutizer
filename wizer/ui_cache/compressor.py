@@ -1,5 +1,6 @@
 import pandas as pd
 
+from wizer.file_helper.lib.parser import Parser
 
 def compress_data_for_ui_cache(parser):
     parser.coordinates_list = _compress_coordinates(coordinates=parser.coordinates_list, decimals=4)
@@ -25,7 +26,24 @@ def _ensure_list_of_ints(input_list):
     return pd.Series(input_list, dtype="float").astype(int).to_list()
 
 
-def ensure_list_attributes_have_same_length(parser):
+def ensure_list_attributes_have_same_length(parser: Parser):
+    """
+    Takes a parser as input and modifies all attributes that end on
+    "..._list" to have the same length. Compressing lengthy lists is
+    done using the helper function: _compress_list_length. Attributes
+    without any value are saved as None.
+
+    Parameters
+    ----------
+    parser : Parser
+        Parser object
+
+    Returns
+    -------
+    parser : Parser
+        Modified Parser object.
+
+    """
     lengths = []
     attributes_with_non_zero_length = {}
     attributes_with_zero_length = []
@@ -42,7 +60,7 @@ def ensure_list_attributes_have_same_length(parser):
             compress_list = _compress_list_length(input_list=value_list, desired_length=minimal_length)
             setattr(parser, attribute, compress_list)
     for attribute in attributes_with_zero_length:
-        setattr(parser, attribute, [None for _ in range(minimal_length)])
+        setattr(parser, attribute, None)
     return parser
 
 

@@ -2,6 +2,7 @@ import os
 import datetime
 
 import pytest
+import pytz
 
 from wizer.models import Settings, Sport, Activity, Traces, UICacheActivityData
 from wizer.file_helper.fit_parser import FITParser
@@ -88,7 +89,7 @@ def activity(db, sport, trace_file, ui_cache_data):
     activity = Activity(
         name='Running',
         sport=sport,
-        date=datetime.datetime(2020, 7, 7),
+        date=datetime.datetime(2020, 7, 7, tzinfo=pytz.UTC),
         duration=datetime.timedelta(minutes=30),
         distance=5.2,
         description="some super sport",

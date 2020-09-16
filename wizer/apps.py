@@ -284,7 +284,6 @@ def get_md5sums_from_model(traces_model):
 
 
 def parse_data(file):
-    log.debug(f"importing file {file} ...")
     if file.endswith(".gpx"):
         log.debug(f"parsing GPX file ...")
         parser = GPXParser(path_to_file=file)

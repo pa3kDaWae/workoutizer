@@ -78,15 +78,14 @@ class Traces(models.Model):
 
 
 class UICacheActivityData(models.Model):
-    coordinates_list = models.CharField(max_length=10000000000, default="[]")
-    distance_list = models.CharField(max_length=10000000000, default="[]")
-    altitude_list = models.CharField(max_length=10000000000, default="[]")
-    heart_rate_list = models.CharField(max_length=10000000000, default="[]")
-    cadence_list = models.CharField(max_length=10000000000, default="[]")
-    speed_list = models.CharField(max_length=10000000000, default="[]")
-    temperature_list = models.CharField(max_length=10000000000, default="[]")
-    timestamps_list = models.CharField(max_length=10000000000, default="[]")
-    # other
+    coordinates_list = models.CharField(max_length=10000000000, null=True)
+    distance_list = models.CharField(max_length=10000000000, null=True)
+    altitude_list = models.CharField(max_length=10000000000, null=True)
+    heart_rate_list = models.CharField(max_length=10000000000, null=True)
+    cadence_list = models.CharField(max_length=10000000000, null=True)
+    speed_list = models.CharField(max_length=10000000000, null=True)
+    temperature_list = models.CharField(max_length=10000000000, null=True)
+    timestamps_list = models.CharField(max_length=10000000000, null=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 

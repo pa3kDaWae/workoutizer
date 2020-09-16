@@ -70,8 +70,6 @@ def plot_time_series(activity: models.Activity):
     """
 
     ui_cache_data = activity.ui_cache_activity_data
-    # from IPython import embed
-    # embed()
 
     coordinates = json.loads(ui_cache_data.coordinates_list)
     initial_list_of_distances = []
@@ -84,12 +82,16 @@ def plot_time_series(activity: models.Activity):
     plots = []
     lap_lines = []
 
-    from IPython import embed
-    embed()
-    for attribute, values in attributes.items():
+    activity_data = {}
+    for k, v in ui_cache_data.__dict__.items():
+        if k.endswith("_list"):
+            activity_data[k] = v
+
+    for attribute, values in activity_data.items():
         if attribute in attributes_to_create_time_series_plot_for:
             values = json.loads(values)
             if values:
+                print(f"len of {attribute}: {len(values)}")
                 attribute = attribute.replace("_list", "")
                 if activity.distance:
                     x_axis = extend_list_to_have_length(length=len(values), input_list=initial_list_of_distances)

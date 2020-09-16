@@ -59,7 +59,7 @@ def test_ensure_list_attributes_have_same_length(dummy_parser):
         assert len(combination[0]) == len(combination[1])
 
 
-def test_ensure_list_attributes_have_same_length__lists_with_zero_length(dummy_parser):
+def test_ensure_list_attributes_have_same_length__with_empty_lists(dummy_parser):
     parser = dummy_parser()
     parser.cadence_list = []
     parser.speed_list = []
@@ -70,8 +70,14 @@ def test_ensure_list_attributes_have_same_length__lists_with_zero_length(dummy_p
             list_attributes.append(value_list)
 
     for combination in combinations(list_attributes, 2):
-        assert len(combination[0]) == len(combination[1])
-        assert len(combination[0]) != 0
+        if combination[0] and combination[1]:
+            assert len(combination[0]) == len(combination[1])
+
+    for value in list_attributes:
+        if value:
+            assert len(value) > 0
+        else:
+            assert value is None
 
 
 def test__compress_list_length(dummy_list):
