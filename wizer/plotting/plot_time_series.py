@@ -4,13 +4,13 @@ from itertools import combinations
 
 from bokeh.plotting import figure
 from bokeh.embed import components
-from bokeh.models import HoverTool, CrosshairTool
-from bokeh.models import CheckboxButtonGroup, CustomJS
+from bokeh.models import CheckboxButtonGroup, CustomJS, HoverTool, CrosshairTool
 from bokeh.layouts import column
+from bokeh.models.formatters import DatetimeTickFormatter
+
 
 from django.conf import settings
-from wizer.tools.utils import cut_list_to_have_same_length, timestamp_to_local_time, extend_list_to_have_length, \
-    convert_list_to_km
+from wizer.tools.utils import timestamp_to_local_time, convert_list_to_km
 from wizer.naming import attributes_to_create_time_series_plot_for
 from wizer import models
 
@@ -76,7 +76,7 @@ def plot_time_series(activity: models.Activity):
     list_of_distances = []
     if coordinates:
         initial_list_of_distances = convert_list_to_km(json.loads(ui_cache_data.distance_list))
-        list_of_distances = extend_list_to_have_length(length=len(coordinates), input_list=initial_list_of_distances)
+        # list_of_distances = extend_list_to_have_length(length=len(coordinates), input_list=initial_list_of_distances)
 
     lap_data = models.Lap.objects.filter(trace=activity.trace_file)
     plots = []
@@ -89,35 +89,31 @@ def plot_time_series(activity: models.Activity):
 
     for attribute, values in activity_data.items():
         if attribute in attributes_to_create_time_series_plot_for:
-            values = json.loads(values)
             if values:
-                print(f"len of {attribute}: {len(values)}")
+                values = json.loads(values)
                 attribute = attribute.replace("_list", "")
-                if activity.distance:
-                    x_axis = extend_list_to_have_length(length=len(values), input_list=initial_list_of_distances)
-                    p = figure(plot_height=int(settings.PLOT_HEIGHT / 2.5),
-                               sizing_mode='stretch_width', y_axis_label=plot_matrix[attribute]["axis"],
-                               x_range=(0, x_axis[-1]))
-                    lap = _add_laps_to_plot(laps=lap_data, plot=p, y_values=values)
-                    x_hover = ("Distance", "@x km")
-                else:  # activity has no distance data, use time for x-axis instead
-                    timestamps_list = json.loads(ui_cache_data.timestamps_list)
-                    start = timestamp_to_local_time(timestamps_list[0])
-                    x_axis = [timestamp_to_local_time(t) - start for t in timestamps_list]
-                    x_axis, values = cut_list_to_have_same_length(x_axis, values)
-                    p = figure(x_axis_type='datetime', plot_height=int(settings.PLOT_HEIGHT / 2.5),
-                               sizing_mode='stretch_width', y_axis_label=plot_matrix[attribute]["axis"])
-                    lap = _add_laps_to_plot(laps=lap_data, plot=p, y_values=values,
-                                            x_start_value=x_axis[0], use_time=True)
-                    x_hover = ("Time", "@x")
+                # # if activity.distance:
+                # #     # x_axis = extend_list_to_have_length(length=len(values), input_list=initial_list_of_distances)
+                # #     p = figure(plot_height=int(settings.PLOT_HEIGHT / 2.5),
+                # #                sizing_mode='stretch_width', y_axis_label=plot_matrix[attribute]["axis"],
+                # #                x_range=(0, x_axis[-1]))
+                # #     lap = _add_laps_to_plot(laps=lap_data, plot=p, y_values=values)
+                # #     x_hover = ("Distance", "@x km")
+                # else:  # activity has no distance data, use time for x-axis instead
+                timestamps_list = json.loads(ui_cache_data.timestamps_list)
+                start = timestamp_to_local_time(timestamps_list[0])
+                x_axis = [timestamp_to_local_time(t) - start for t in timestamps_list]
+                # x_axis, values = cut_list_to_have_same_length(x_axis, values)
+                p = figure(x_axis_type='datetime', plot_height=int(settings.PLOT_HEIGHT / 2.5),
+                           sizing_mode='stretch_width', y_axis_label=plot_matrix[attribute]["axis"])
+                lap = _add_laps_to_plot(laps=lap_data, plot=p, y_values=values,
+                                        x_start_value=x_axis[0], use_time=True)
+                x_hover = ("Time", "@x")
                 lap_lines += lap
                 p.toolbar.logo = None
                 p.toolbar_location = None
                 p.xgrid.grid_line_color = None
-                if attribute == 'cadence':
-                    p.scatter(x_axis, values, radius=0.01, fill_alpha=1, color=plot_matrix[attribute]["color"],
-                              legend_label=plot_matrix[attribute]["title"])
-                elif attribute == 'altitude':
+                if attribute == 'altitude':
                     p.varea(x_axis, values, [min(values) for i in range(len(values))],
                             color=plot_matrix[attribute]["second_color"], fill_alpha=0.5)
                     p.line(x_axis, values, line_width=2, color=plot_matrix[attribute]["color"],
@@ -135,6 +131,11 @@ def plot_time_series(activity: models.Activity):
                 p.legend.location = "top_left"
                 p.legend.label_text_font = "ubuntu"
                 p.legend.background_fill_alpha = 0.9
+                dtf = DatetimeTickFormatter()
+                dtf.minutes = ["%M:%S"]
+                p.xaxis.formatter = dtf
+                p.xaxis.major_label_overrides = {0: "0:00"}
+
                 plots.append(p)
 
     _link_all_plots_with_each_other(all_plots=plots, x_values=list_of_distances)

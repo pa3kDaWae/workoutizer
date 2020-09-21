@@ -3,8 +3,6 @@ import hashlib
 import datetime
 
 import pytz
-import numpy as np
-import pandas as pd
 from django.conf import settings
 
 log = logging.getLogger(__name__)
@@ -22,18 +20,6 @@ def calc_md5(file):
         for chunk in iter(lambda: f.read(4096), b""):
             hash_md5.update(chunk)
     return hash_md5.hexdigest()
-
-
-def remove_nones_from_string(string: str):
-    if "None, " in string:
-        string = string.replace("None, ", "")
-    if ", None" in string:
-        string = string.replace(", None", "")
-    elif "None " in string:
-        string = string.replace("None ", "")
-    elif "None" in string:
-        string = string.replace("None", "")
-    return string
 
 
 def remove_nones_from_list(list: list):
@@ -66,18 +52,6 @@ def timestamp_to_local_time(timestamp: int):
 
 def remove_microseconds(delta):
     return delta - datetime.timedelta(microseconds=delta.microseconds)
-
-
-def extend_list_to_have_length(length: int, input_list: list):
-    if not input_list:
-        return input_list
-    arr = [input_list[int(x)] for x in np.arange(0, len(input_list), (len(input_list) / length))]
-    s = pd.Series(arr)
-    s = s.where(~s.duplicated(keep="first"), np.nan).interpolate()
-    s = s[:length]
-    log.debug(f"length of generated list: {len(s)} vs given length: {length}")
-    assert len(s) == length
-    return list(s)
 
 
 def convert_list_to_km(list_in_meter: list):

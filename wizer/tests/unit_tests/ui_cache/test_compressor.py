@@ -83,6 +83,7 @@ def test_ensure_list_attributes_have_same_length__with_empty_lists(dummy_parser)
 def test__compress_list_length(dummy_list):
     list20 = dummy_list(length=20)
     assert len(_compress_list_length(input_list=list20, desired_length=0)) == 0
+    assert len(_compress_list_length(input_list=list20, desired_length=1)) == 1
     assert len(_compress_list_length(input_list=list20, desired_length=10)) == 10
     assert len(_compress_list_length(input_list=list20, desired_length=20)) == 20
     with pytest.raises(ValueError):
@@ -104,10 +105,10 @@ def test__compress_list_length(dummy_list):
     assert len(_compress_list_length(input_list=list500, desired_length=19)) == 19
     list4872 = dummy_list(length=4872)
     assert len(_compress_list_length(input_list=list4872, desired_length=547)) == 547
+    list100 = dummy_list(length=100)
+    assert _compress_list_length(input_list=list100, desired_length=9) == [0, 14, 26, 38, 50, 63, 75, 87, 99]
     custom_list = [1.234, 4.89, 6.0, 8.38]
     assert len(_compress_list_length(input_list=custom_list, desired_length=3)) == 3
-
-
 
 
 
