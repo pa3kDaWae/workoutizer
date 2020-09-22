@@ -10,9 +10,13 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 INITIAL_TRACE_DATA_DIR = os.path.join(BASE_DIR, 'setup', 'initial_trace_data')
 
 USER_HOME = Path.home()
+print("ASDF")
+print(f"got home: {USER_HOME}")
 WORKOUTIZER_DIR = os.path.join(str(USER_HOME), ".wkz")
+print(f"got wkz dir: {WORKOUTIZER_DIR}")
 SQLITE_FILE = 'db.sqlite3'
 WORKOUTIZER_DB_PATH = os.path.join(WORKOUTIZER_DIR, SQLITE_FILE)
+print(f"got wkz db path: {WORKOUTIZER_DB_PATH}")
 TRACKS_DIR = os.path.join(WORKOUTIZER_DIR, 'tracks')
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
