@@ -10,7 +10,7 @@ timeout = 10
 
 
 def _runserver():
-    os.system(f"wkz manage 'runserver {app_url} --noreload'")
+    os.system(f"sudo wkz manage 'runserver {app_url} --noreload'")
 
 
 def _get_site_status_code(url):
@@ -18,7 +18,7 @@ def _get_site_status_code(url):
 
 
 def test_workoutizer_full():
-    os.system("wkz manage migrate")
+    os.system("sudo wkz manage migrate")
     proc = Process(target=_runserver, args=())
     proc.start()
 
