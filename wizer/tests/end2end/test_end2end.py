@@ -18,6 +18,7 @@ def _get_site_status_code(url):
 
 
 def test_workoutizer_full():
+    os.system("wky manage migrate")
     proc = Process(target=_runserver, args=())
     proc.start()
 
