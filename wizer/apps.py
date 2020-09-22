@@ -102,7 +102,7 @@ class FileImporter:
                     self.importing_demo_data = False
                 time.sleep(interval)
         except OperationalError as e:
-            log.warning(f"cannot run FileImporter. Maybe run django migrations first: {e}")
+            log.warning(f"cannot run FileImporter. Maybe run django migrations first: {e}", exc_info=True)
 
     def _run_parser(self, trace_files):
         md5sums_from_db = get_md5sums_from_model(traces_model=self.models.Traces)
