@@ -29,8 +29,8 @@ jobs:
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Run end2end Test
-          run: |
-            pytest wizer/tests/end2end -v
+        run: |
+          pytest wizer/tests/end2end -v
       - name: Run Unit Tests
         run: |
           pytest wizer/tests/unit_tests -v
