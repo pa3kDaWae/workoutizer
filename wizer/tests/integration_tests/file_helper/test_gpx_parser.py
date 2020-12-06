@@ -33,3 +33,8 @@ def test__parse_coordinates(gpx_parser):
     parser = gpx_parser()
     assert parser.coordinates_list[0] == [8.687453, 49.405446]
     assert parser.altitude_list[0] == 128.94
+
+
+def test__parse_emptypts_coordinates(gpx_parser2):
+    parser = gpx_parser2()
+    assert parser.coordinates_list == []

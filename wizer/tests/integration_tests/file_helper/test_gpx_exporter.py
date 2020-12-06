@@ -47,6 +47,12 @@ def test__fill_list_of_timestamps():
 
 
 def test_save_activity_to_gpx_file(activity):
-    path = save_activity_to_gpx_file(activity)
-    assert os.path.isfile(path)
-    assert path.split('/')[-1] == '2020-07-07_running.gpx'
+    path1 = save_activity_to_gpx_file(activity)
+    assert os.path.isfile(path1)
+    assert path1.split('/')[-1] == '2020-07-07_running.gpx'
+
+
+def test_save_activity2_to_gpx_file(activity2):
+    path2 = save_activity_to_gpx_file(activity2)
+    assert os.path.isfile(path2)
+    assert path2.split('/')[-1] == '2020-07-07_running.gpx'

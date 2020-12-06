@@ -26,6 +26,16 @@ def gpx_parser():
     return _pass_path
 
 
+@pytest.fixture(scope="module")
+def gpx_parser2():
+    test_file_path = os.path.join(os.path.dirname(__file__), "../data/example2.gpx")
+
+    def _pass_path(path=test_file_path):
+        return GPXParser(path_to_file=path)
+
+    return _pass_path
+
+
 @pytest.fixture(scope='session')
 def trace_coordinates():
     return [[8.476648433133962, 49.48468884453178], [8.476595375686886, 49.48457719758154],

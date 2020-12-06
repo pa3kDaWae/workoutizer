@@ -43,15 +43,44 @@ def trace_file(db):
 
 
 @pytest.fixture
+def trace_file2(db):
+    trace = Traces(
+        path_to_file='some/path/to/file.gpx',
+        file_name='file.gpx',
+        md5sum='4c1185c55476269b442f424a9d80d964',
+        coordinates_list='[[8.47357001155615, 49.47972273454071], [8.47357001155615, 49.47972273454071]]',
+        altitude_list='[430, 450]',
+        calories=123,
+    )
+    trace.save()
+    return trace
+
+
+@pytest.fixture
 def activity(db, sport, trace_file):
     activity = Activity(
         name='Running',
         sport=sport,
-        date=datetime.datetime(2020, 7, 7),
+        date=datetime.datetime(year=2020, month=7, day=7, tzinfo=timezone.get_current_timezone()),
         duration=datetime.timedelta(minutes=30),
         distance=5.2,
         description="some super sport",
         trace_file=trace_file,
+    )
+    activity.save()
+    return activity
+
+
+@pytest.fixture
+def activity2(db, sport, trace_file2):
+    activity = Activity(
+        name='Running',
+        sport=sport,
+        date=datetime.datetime(year=2020, month=7, day=7, tzinfo=timezone.get_current_timezone()),
+        duration=datetime.timedelta(minutes=30),
+        distance=5.2,
+        description="some super sport",
+        trace_file=trace_file2,
     )
     activity.save()
     return activity

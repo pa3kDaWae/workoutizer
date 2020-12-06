@@ -6,7 +6,7 @@ import pytz
 from workoutizer import settings
 from wizer.models import Settings, Sport, Activity
 from wizer.file_helper.initial_data_handler import _insert_current_date_into_gpx, insert_settings_and_sports_to_model, \
-    insert_activities_to_model
+    insert_activities_to_model, create_demo_trace_data_with_recent_time, _get_all_initial_trace_files
 
 
 def test__insert_current_date_into_gpx(gpx_parser):
@@ -46,3 +46,12 @@ def test_insert_activities_to_model(db):
     # no insert activities
     insert_activities_to_model(Sport, Activity)
     assert Activity.objects.count() > 0
+
+
+def test_create_demo_trace_data_with_recent_time():
+    create_demo_trace_data_with_recent_time()
+
+
+def test_get_all_initial_trace_files():
+    files = _get_all_initial_trace_files()
+    assert len(files) == 7

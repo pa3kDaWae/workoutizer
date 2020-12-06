@@ -35,8 +35,11 @@ class GPXParser(Parser):
         for s in self.gpx.tracks[0].segments:
             for p in s.points:
                 all_points_time.append(p.time)
-        start = all_points_time[0]
-        end = all_points_time[-1]
+        start = False
+        end = False
+        if all_points_time:
+            start = all_points_time[0]
+            end = all_points_time[-1]
         if start and end:
             self.duration = end - start
             log.debug(f"found duration: {self.duration}")

@@ -1,4 +1,4 @@
-from wizer.file_helper.reimporter import _values_equal
+from wizer.file_helper.reimporter import _values_equal, Reimporter
 
 
 def test__values_equal():
