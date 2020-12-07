@@ -12,3 +12,7 @@ build/
 *.egg-info
 .eggs/
 venv/
+prof/
+.idea/
+.coverage
+.coveragerc
